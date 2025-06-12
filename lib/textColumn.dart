@@ -85,40 +85,34 @@ class _textColumn extends State<textColumn> {
             ),
           ),
         ),
-
-        userTextInput(_inputTextController, inputText),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            margin: EdgeInsetsDirectional.fromSTEB(20, 20, 20, 20),
+            decoration: BoxDecoration(
+              border: Border.all(width: 1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: CupertinoTextField(
+              controller: _inputTextController,
+              style: Theme.of(context).textTheme.bodyMedium,
+              suffixMode: OverlayVisibilityMode.always,
+              maxLines: 4,
+              minLines: 1,
+              suffix: CupertinoButton(
+                borderRadius: BorderRadius.circular(0.5),
+                onPressed: () => inputText(_inputTextController.text),
+                sizeStyle: CupertinoButtonSize.medium,
+                child: Icon(CupertinoIcons.arrow_up_circle_fill),
+              ),
+            ),
+          ),
+        ),
       ],
     ));
   }
 
   void _scrollListener() {
     //print("Scroll Position: ${_scrollController.position.pixels}");
-  }
-}
-
-class userTextInput extends StatelessWidget {
-  final TextEditingController _inputTextController;
-  final inputText;
-
-  const userTextInput(this._inputTextController, this.inputText, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return (Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsetsDirectional.fromSTEB(20, 5, 20, 20),
-        decoration: BoxDecoration(
-          color: Colors.grey,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(width: 0.75),
-        ),
-        child: CupertinoTextField(
-          controller: _inputTextController,
-          onSubmitted: inputText,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ),
-    ));
   }
 }
