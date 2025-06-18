@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 const String INITIAL_TEXT = 'Initial Text';
 
@@ -15,13 +18,32 @@ class _textColumn extends State<textColumn> {
   late TextEditingController _inputTextController;
   late TextEditingController _exampleTextController;
 
-  void inputText(String text) {
-    //need to make this more dynamic to screen size
-    setState(() {
-      _inputTextController.text = INITIAL_TEXT;
-      _exampleTextController.text = text;
-      inputs.add(text);
-    });
+  Future<void> sendRequest(String message) async {
+    final url = Uri.parse(
+      'https://pd6xmmpkbf.execute-api.us-east-1.amazonaws.com/v1/chat',
+    );
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'prompt': message}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Response from server: ${data['response']}');
+        setState(() {
+          _inputTextController.text = INITIAL_TEXT;
+          _exampleTextController.text = data['response'];
+          inputs.add(data['response']);
+        });
+      } else {
+        print('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error sending message: $e');
+    }
   }
 
   @override
@@ -54,61 +76,67 @@ class _textColumn extends State<textColumn> {
 
     var messageFontSize = Theme.of(context).textTheme.bodyMedium!;
 
-    return (Column(
-      children: [
-        Expanded(
-          child: CupertinoScrollbar(
-            thumbVisibility: true,
-            controller: _scrollController,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: inputs.length,
+    return (SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: CupertinoScrollbar(
+              thumbVisibility: true,
               controller: _scrollController,
-              itemBuilder: (context, index) {
-                //Message Reply Box
-                return (Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    margin: EdgeInsetsDirectional.fromSTEB(20, 5, 10, 5),
-                    padding: EdgeInsetsDirectional.fromSTEB(15, 5, 15, 5),
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(6),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: inputs.length,
+                controller: _scrollController,
+                itemBuilder: (context, index) {
+                  //Message Reply Box
+                  return (Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      margin: EdgeInsetsDirectional.fromSTEB(20, 5, 10, 5),
+                      padding: EdgeInsetsDirectional.fromSTEB(15, 5, 15, 5),
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        "${inputs[index]}: $index",
+                        style: messageFontSize,
+                      ),
                     ),
-                    child: Text(
-                      "${inputs[index]}: $index",
-                      style: messageFontSize,
-                    ),
-                  ),
-                ));
-              },
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            margin: EdgeInsetsDirectional.fromSTEB(20, 20, 20, 20),
-            decoration: BoxDecoration(
-              border: Border.all(width: 1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: CupertinoTextField(
-              controller: _inputTextController,
-              style: Theme.of(context).textTheme.bodyMedium,
-              suffixMode: OverlayVisibilityMode.always,
-              maxLines: 4,
-              minLines: 1,
-              suffix: CupertinoButton(
-                borderRadius: BorderRadius.circular(0.5),
-                onPressed: () => inputText(_inputTextController.text),
-                sizeStyle: CupertinoButtonSize.medium,
-                child: Icon(CupertinoIcons.arrow_up_circle_fill),
+                  ));
+                },
               ),
             ),
           ),
-        ),
-      ],
+
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0), // Add bottom padding
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                margin: EdgeInsetsDirectional.fromSTEB(20, 20, 20, 20),
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: CupertinoTextField(
+                  controller: _inputTextController,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  suffixMode: OverlayVisibilityMode.always,
+                  maxLines: 4,
+                  minLines: 1,
+                  suffix: CupertinoButton(
+                    borderRadius: BorderRadius.circular(0.5),
+                    onPressed: () => sendRequest(_inputTextController.text),
+                    sizeStyle: CupertinoButtonSize.medium,
+                    child: Icon(CupertinoIcons.arrow_up_circle_fill),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     ));
   }
 
