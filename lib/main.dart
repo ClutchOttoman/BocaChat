@@ -21,9 +21,8 @@ class MyApp extends StatelessWidget {
   }
 }*/
 
+import 'package:boca_raton_gpt/login_page.dart';
 import 'package:flutter/cupertino.dart';
-import 'home_page.dart';
-import 'chat_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -46,29 +45,6 @@ class MainTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoTabScaffold(
-      tabBar: CupertinoTabBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.chat_bubble_2),
-            label: 'Chat',
-          ),
-        ],
-      ),
-      tabBuilder: (context, index) {
-        switch (index) {
-          case 0:
-            return CupertinoTabView(builder: (context) => HomePage());
-          case 1:
-            return CupertinoTabView(builder: (context) => ChatPage());
-          default:
-            return CupertinoTabView(builder: (context) => HomePage());
-        }
-      },
-    );
+    return LoginPage();
   }
 }

@@ -1,14 +1,21 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+const String siteUrl =
+    'https://pd6xmmpkbf.execute-api.us-east-1.amazonaws.com/v1';
+
 const String INITIAL_TEXT = 'Initial Text';
+const Widget sendButtonIcon = Icon(CupertinoIcons.arrow_up_circle_fill);
+const Widget loadingAnim = CupertinoActivityIndicator(color: Colors.blueAccent);
 
 class textColumn extends StatefulWidget {
   const textColumn({super.key});
 
+  @override
   _textColumn createState() => _textColumn();
 }
 
@@ -16,12 +23,31 @@ class _textColumn extends State<textColumn> {
   final List<String> inputs = List.empty(growable: true);
   late ScrollController _scrollController;
   late TextEditingController _inputTextController;
-  late TextEditingController _exampleTextController;
+  Widget textInputButton = sendButtonIcon;
+  bool isLoading = false;
+
+  void setLoading(bool state) {
+    setState(() {
+      isLoading = state;
+      if (state) {
+        textInputButton = loadingAnim;
+      } else {
+        textInputButton = sendButtonIcon;
+      }
+    });
+  }
+
+  Future<void> inputRequest(String message) async {
+    try {
+      setLoading(true);
+      await sendRequest(message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   Future<void> sendRequest(String message) async {
-    final url = Uri.parse(
-      'https://pd6xmmpkbf.execute-api.us-east-1.amazonaws.com/v1/chat',
-    );
+    final url = Uri.parse('$siteUrl/chat');
 
     try {
       final response = await http.post(
@@ -32,31 +58,34 @@ class _textColumn extends State<textColumn> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Response from server: ${data['response']}');
+        if (kDebugMode) {
+          print('Response from server: ${data['response']}');
+        }
         setState(() {
           _inputTextController.text = INITIAL_TEXT;
-          _exampleTextController.text = data['response'];
           inputs.add(data['response']);
         });
       } else {
-        print('Server error: ${response.statusCode}');
+        if (kDebugMode) {
+          print('Server error: ${response.statusCode}');
+        }
       }
     } catch (e) {
-      print('Error sending message: $e');
+      if (kDebugMode) {
+        print('Error sending message: $e');
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _exampleTextController = TextEditingController(text: '');
     _scrollController = ScrollController()..addListener(_scrollListener);
     _inputTextController = TextEditingController(text: INITIAL_TEXT);
   }
 
   @override
   void dispose() {
-    _exampleTextController.dispose();
     _scrollController.dispose();
     _inputTextController.dispose();
     inputs.removeRange(0, inputs.length - 1);
@@ -127,9 +156,12 @@ class _textColumn extends State<textColumn> {
                   minLines: 1,
                   suffix: CupertinoButton(
                     borderRadius: BorderRadius.circular(0.5),
-                    onPressed: () => sendRequest(_inputTextController.text),
+                    onPressed:
+                        isLoading
+                            ? null
+                            : () => inputRequest(_inputTextController.text),
                     sizeStyle: CupertinoButtonSize.medium,
-                    child: Icon(CupertinoIcons.arrow_up_circle_fill),
+                    child: textInputButton,
                   ),
                 ),
               ),

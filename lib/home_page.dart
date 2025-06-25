@@ -1,5 +1,38 @@
 import 'package:flutter/cupertino.dart';
-import 'BocaInfoPage.dart';
+import 'boca_info_page.dart';
+import 'chat_page.dart';
+
+class TabNavigator extends StatelessWidget {
+  const TabNavigator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.chat_bubble_2),
+            label: 'Chat',
+          ),
+        ],
+      ),
+      tabBuilder: (context, index) {
+        switch (index) {
+          case 0:
+            return CupertinoTabView(builder: (context) => HomePage());
+          case 1:
+            return CupertinoTabView(builder: (context) => ChatPage());
+          default:
+            return CupertinoTabView(builder: (context) => HomePage());
+        }
+      },
+    );
+  }
+}
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
