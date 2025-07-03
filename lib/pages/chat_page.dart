@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'textColumn.dart';
+import '../views/TextColumn.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
@@ -7,10 +7,8 @@ class ChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Chat'),
-      ),
-      child: textColumn(),
+      navigationBar: CupertinoNavigationBar(middle: Text('Chat')),
+      child: TextColumn(),
     );
   }
 }

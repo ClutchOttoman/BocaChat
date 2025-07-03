@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:boca_raton_gpt/home_page.dart';
+import 'package:boca_raton_gpt/pages/home_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
