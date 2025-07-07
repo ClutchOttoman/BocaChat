@@ -1,9 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../viewModels/ChatViewModel.dart';
 import '../models/ConversationModel.dart';
@@ -15,19 +11,34 @@ const String INITIAL_TEXT = 'Initial Text';
 const Widget sendButtonIcon = Icon(CupertinoIcons.arrow_up_circle_fill);
 const Widget loadingAnim = CupertinoActivityIndicator(color: Colors.blueAccent);
 
-class TextColumn extends StatefulWidget {
-  const TextColumn({super.key});
+// View for chat interface with message list and message input.
+// TODO -- include interfacing for userID and conversationID to initialize with desired conversation
+class ChatView extends StatefulWidget {
+  const ChatView({super.key});
 
   @override
-  State<TextColumn> createState() => _TextColumnState();
+  State<ChatView> createState() => _ChatViewState();
 }
 
-class _TextColumnState extends State<TextColumn> {
+class _ChatViewState extends State<ChatView> {
+  //ViewModel to handle conversation information and conversation logic
   final ChatViewModel _viewModel = ChatViewModel();
+  List<ConversationMessage> initialMessageList =
+      List<ConversationMessage>.empty(growable: true);
   final TextEditingController _inputController = TextEditingController(
     text: INITIAL_TEXT,
   );
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    //fetch conversation based on desired conversation info
+    _viewModel.loadConversation(
+      userId: "userId",
+      conversationId: "conversationId",
+    );
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -67,24 +78,49 @@ class _TextColumnState extends State<TextColumn> {
                     controller: _scrollController,
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
-                      return Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 5,
+                      if (messages[index].userMessage) {
+                        return Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              left: 80,
+                              right: 20,
+                              top: 5,
+                              bottom: 5,
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.blueAccent,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              "${messages[index].message}: $index",
+                              style: textStyle,
+                            ),
                           ),
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(6),
+                        );
+                      } else {
+                        return Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              left: 20,
+                              right: 80,
+                              top: 5,
+                              bottom: 5,
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              "${messages[index].message}: $index",
+                              style: textStyle,
+                            ),
                           ),
-                          child: Text(
-                            "${messages[index].message}: $index",
-                            style: textStyle,
-                          ),
-                        ),
-                      );
+                        );
+                      }
                     },
                   ),
                 );
