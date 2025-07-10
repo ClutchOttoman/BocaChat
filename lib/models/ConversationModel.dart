@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+
 //Models for Conversation and individual ConversationMessages
 class Conversation {
   late List<ConversationMessage> conversation;
   late String topic;
 
-  //defualt constructor
+  //default constructor
   Conversation({
     required List<ConversationMessage> messageList,
     required String newTopic,

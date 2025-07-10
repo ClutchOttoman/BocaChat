@@ -23,6 +23,13 @@ class MyApp extends StatelessWidget {
 
 import 'package:boca_raton_gpt/pages/login_page.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+
+final String url = "http://10.0.2.2:4001";
+final HttpLink httpLink = HttpLink(url);
+final ValueNotifier<GraphQLClient> client = ValueNotifier(
+  GraphQLClient(link: httpLink, cache: GraphQLCache(store: InMemoryStore())),
+);
 
 void main() {
   runApp(const MyApp());
@@ -33,9 +40,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoApp(
-      home: MainTabs(),
-      debugShowCheckedModeBanner: false,
+    return GraphQLProvider(
+      client: client,
+      child: const CupertinoApp(
+        home: MainTabs(),
+        debugShowCheckedModeBanner: false,
+        title: 'Boca Chat',
+      ),
     );
   }
 }
