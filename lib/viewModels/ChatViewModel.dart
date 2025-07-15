@@ -14,22 +14,22 @@ const String siteUrl =
 //View model for chat conversations
 //exposes a sink for view elements to add messages to a conversation and streams see if data is loading or present and to read the current state of the conversation
 class ChatViewModel {
-  final _messagesController = StreamController<Conversation>.broadcast();
+  final _conversationController = StreamController<Conversation>.broadcast();
   final _loadingController = StreamController<bool>.broadcast();
 
-  late Conversation _messages;
+  late Conversation _conversation;
 
   ChatViewModel() {
-    _messages = Conversation(messageList: [], newTopic: "");
+    _conversation = Conversation(interactionList: [], newTopic: "");
   }
 
-  Stream<Conversation> get messagesStream => _messagesController.stream;
+  Stream<Conversation> get conversationStream => _conversationController.stream;
 
   Stream<bool> get loadingStream => _loadingController.stream;
 
   static Future<ChatViewModel> createChatViewModel() async {
     var modelView = ChatViewModel();
-    modelView._messages = await Conversation.getConversation(
+    modelView._conversation = await Conversation.getConversation(
       userId: "userId",
       conversationId: "conversationId",
     );
@@ -37,35 +37,37 @@ class ChatViewModel {
   }
 
   void dispose() {
-    _messagesController.close();
+    _conversationController.close();
     _loadingController.close();
   }
 
   //send a message to server for chatbot response
   //puts response in stream for view to read from
-  Future<void> sendMessage(message) async {
+  Future<void> sendPrompt(prompt) async {
     _loadingController.sink.add(true);
-    _messages.addMessage(
-      ConversationMessage(newMessage: message, isUser: true),
+    _conversation.addPrompt(
+      ConversationInteraction(
+        newPrompt: prompt,
+        newResponse: "",
+        id: "id-$prompt",
+      ),
     );
-    _messagesController.sink.add(_messages);
+    _conversationController.sink.add(_conversation);
     try {
       final response = await http.post(
         Uri.parse('$siteUrl/chat'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'prompt': message}),
+        body: jsonEncode({'prompt': prompt}),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        _messages.addMessage(
-          ConversationMessage(newMessage: data['response'], isUser: false),
-        );
+        _conversation.addResponseToLast(data['response']);
         Conversation list = Conversation(
-          messageList: List.from(_messages.conversation),
-          newTopic: _messages.topic,
+          interactionList: List.from(_conversation.conversation),
+          newTopic: _conversation.topic,
         );
-        _messagesController.sink.add(list);
+        _conversationController.sink.add(list);
       } else {
         if (kDebugMode) print('Server error: ${response.statusCode}');
       }
@@ -87,8 +89,8 @@ class ChatViewModel {
         userId: "userId",
         conversationId: "conversationId",
       );
-      _messagesController.sink.add(fetchedConversation);
-      _messages = fetchedConversation;
+      _conversationController.sink.add(fetchedConversation);
+      _conversation = fetchedConversation;
     } catch (e) {
       if (kDebugMode) print('Error: $e');
     }

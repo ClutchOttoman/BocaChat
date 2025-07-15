@@ -1,24 +1,26 @@
 import 'package:flutter/cupertino.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 
 //Models for Conversation and individual ConversationMessages
 class Conversation {
-  late List<ConversationMessage> conversation;
+  //late List<ConversationMessage> conversation;
+  late List<ConversationInteraction> conversation;
   late String topic;
 
   //default constructor
   Conversation({
-    required List<ConversationMessage> messageList,
+    required List<ConversationInteraction> interactionList,
     required String newTopic,
   }) {
-    conversation = List<ConversationMessage>.empty(growable: true);
-    conversation.addAll(messageList);
+    conversation = List<ConversationInteraction>.empty(
+      growable: true,
+    ); //List<ConversationMessage>.empty(growable: true);
+    conversation.addAll(interactionList);
     topic = newTopic;
   }
 
   //private constructor for use when making a conversation fetched from API
   Conversation._create() {
-    conversation = List<ConversationMessage>.empty(growable: true);
+    conversation = List<ConversationInteraction>.empty(growable: true);
     topic = "";
   }
 
@@ -35,9 +37,10 @@ class Conversation {
     conversation.conversation.addAll(
       List.generate(
         10,
-        (i) => ConversationMessage(
-          newMessage: "message $i",
-          isUser: (i % 2 == 0 ? true : false),
+        (i) => ConversationInteraction(
+          id: "id-$i",
+          newPrompt: "message $i",
+          newResponse: "response $i",
         ),
       ),
     );
@@ -46,13 +49,17 @@ class Conversation {
   }
 
   //setter method for adding message to a conversation.
-  void addMessage(ConversationMessage message) {
-    conversation.add(message);
+  void addPrompt(ConversationInteraction interaction) {
+    conversation.add(interaction);
+  }
+
+  void addResponseToLast(String response) {
+    conversation.last.response = response;
   }
 }
 
 //class for individual conversation message
-class ConversationMessage {
+/*class ConversationMessage {
   String message = "";
 
   //denotes if message is from user or sent to user
@@ -62,5 +69,20 @@ class ConversationMessage {
   ConversationMessage({required String newMessage, required bool isUser}) {
     message += newMessage;
     userMessage = isUser;
+  }
+}*/
+
+class ConversationInteraction {
+  String prompt = "";
+  String response = "";
+  String id = "";
+
+  ConversationInteraction({
+    required String id,
+    required String newPrompt,
+    required String newResponse,
+  }) {
+    prompt += newPrompt;
+    response += newResponse;
   }
 }

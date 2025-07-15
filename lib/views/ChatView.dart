@@ -23,8 +23,8 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   //ViewModel to handle conversation information and conversation logic
   final ChatViewModel _viewModel = ChatViewModel();
-  List<ConversationMessage> initialMessageList =
-      List<ConversationMessage>.empty(growable: true);
+  List<ConversationInteraction> initialMessageList =
+      List<ConversationInteraction>.empty(growable: true);
   final TextEditingController _inputController = TextEditingController(
     text: INITIAL_TEXT,
   );
@@ -57,10 +57,10 @@ class _ChatViewState extends State<ChatView> {
         children: [
           Expanded(
             child: StreamBuilder<Conversation>(
-              stream: _viewModel.messagesStream,
-              initialData: Conversation(messageList: [], newTopic: ""),
+              stream: _viewModel.conversationStream,
+              initialData: Conversation(interactionList: [], newTopic: ""),
               builder: (context, snapshot) {
-                final messages = snapshot.data!.conversation;
+                final interactions = snapshot.data!.conversation;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (_scrollController.hasClients) {
                     _scrollController.animateTo(
@@ -76,9 +76,9 @@ class _ChatViewState extends State<ChatView> {
                   thumbVisibility: true,
                   child: ListView.builder(
                     controller: _scrollController,
-                    itemCount: messages.length,
+                    itemCount: interactions.length * 2,
                     itemBuilder: (context, index) {
-                      if (messages[index].userMessage) {
+                      if (index.isEven) {
                         return Align(
                           alignment: Alignment.centerRight,
                           child: Container(
@@ -94,7 +94,7 @@ class _ChatViewState extends State<ChatView> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              "${messages[index].message}: $index",
+                              "${interactions[(index / 2).floor()].prompt}: $index",
                               style: textStyle,
                             ),
                           ),
@@ -115,7 +115,7 @@ class _ChatViewState extends State<ChatView> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              "${messages[index].message}: $index",
+                              "${interactions[(index / 2).floor()].response}: $index",
                               style: textStyle,
                             ),
                           ),
@@ -152,7 +152,7 @@ class _ChatViewState extends State<ChatView> {
                           isLoading
                               ? null
                               : () {
-                                _viewModel.sendMessage(_inputController.text);
+                                _viewModel.sendPrompt(_inputController.text);
                                 _inputController.text = INITIAL_TEXT;
                               },
                       child:
